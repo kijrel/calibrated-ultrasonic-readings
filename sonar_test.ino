@@ -11,6 +11,7 @@
 #define PING_MEDIAN 25
 #define SONAR_UNCERTAINCY 45
 #define STEPS 4
+#define SENSIBILITE 1
 
 NewPing sonar = NewPing(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE);
 char last_midi_note = 0;
@@ -19,6 +20,8 @@ int last_sonar_ping = 0;
 int last_sonar_pings[PING_MEDIAN];
 int i = 0;
 char loop_number = 0;
+int dernieresValeurs[10];
+int derniersEcarts[10];
 Line<int> interpolation;
 
 void setup() {
@@ -30,6 +33,10 @@ void setup() {
     // Initalises last_pings to zero
     for(i=0; i<PING_MEDIAN; i++) {
         last_sonar_pings[i] = 0;
+    }
+    for(i=0; i<10; i++){
+        dernieresValeurs[i]=0;
+        derniersEcarts[i]=0;
     }
 }
 
@@ -124,7 +131,45 @@ int read_sonar_ping() {
     return 0;
 }
 
+/**
+ * @param tableau de int
+ * @return moyenne des valeurs du tableau
+ */
+int moyenne(int valeurs[]) {
+    int moyenne = 0;
+    int longueurTableau = 0;
+        for(int valeur: valeurs){
+            moyenne += valeur;
+            longueurTableau ++;
+        }
+        moyenne /= longueurTableau;
+    return moyenne;
+}
+
+void ajoutValeur(int valeurs[], int nouvelleValeur)
+{
+    int longueur = sizeof(valeurs)/sizeof(valeurs[0]);
+    for(int i=longueur-1; i>0; i++)
+    {
+        valeurs[i] = valeurs[i-1];
+    }
+    valeur[0]=nouvelleValeur;
+}
+
+boolean isValeurBonne()
+{
+    if(derniersEcarts[0]>SENSIBILITE*moyenne(derniersEcarts))
+    {
+        return true;
+    }
+    return false;
+}
+
 void loop() {
+
+    ajoutValeur(dernieresValeurs,sonar.ping());
+    ajoutValeur(derniersEcarts,math.fabs(dernieresValeurs[0]-moyenne(dernieresValeurs)));
+    Serial.println(isVAleurBonne());
     
     // Serial.println(sonar.ping());
     
